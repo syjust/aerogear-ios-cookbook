@@ -18,13 +18,6 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	// Do any additional setup after loading the view, typically from a nib.
-#if !TARGET_IPHONE_SIMULATOR
-    NSLog(@"Running on device");
-#endif
-#if TARGET_IPHONE_SIMULATOR
-    NSLog(@"Running on simulator");
-#endif
 }
 
 - (void)didReceiveMemoryWarning
@@ -45,9 +38,27 @@
         [self presentViewController:imagePicker animated:YES completion:nil];
         _newMedia = YES;
     } else {
-        // TODO display warning and mock photo
+        // TODO display warning and mock photo for non supporting camera like simulator
     
     }
+}
+
+- (void) useCameraRoll:(id)sender
+{
+    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeSavedPhotosAlbum])
+    {
+        UIImagePickerController *imagePicker = [[UIImagePickerController alloc] init];
+        imagePicker.delegate = self;
+        imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+        imagePicker.mediaTypes = @[(NSString *) kUTTypeImage];
+        imagePicker.allowsEditing = NO;
+        [self presentViewController:imagePicker animated:YES completion:nil];
+        _newMedia = NO;
+    }
+}
+
+- (IBAction)share:(id)sender {
+    NSLog(@"Sharing...");
 }
 
 #pragma mark -
@@ -92,5 +103,6 @@
 {
     [self dismissViewControllerAnimated:YES completion:nil];
 }
+
 
 @end
