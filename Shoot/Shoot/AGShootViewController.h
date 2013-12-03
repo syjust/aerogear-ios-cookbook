@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import <MobileCoreServices/MobileCoreServices.h>
+#import <DropboxSDK/DropboxSDK.h>
 
 @interface AGShootViewController : UIViewController <UIImagePickerControllerDelegate, UINavigationControllerDelegate>
 
@@ -16,4 +17,9 @@
 - (IBAction)useCamera:(id)sender;
 - (IBAction)useCameraRoll:(id)sender;
 - (IBAction)share:(id)sender;
+
+// Dropbox OAuth step
+- (IBAction)didPressLink;
+@property (nonatomic, retain) IBOutlet UIButton* linkButton;
+@property (nonatomic, retain) DBRestClient* restClient;
 @end
