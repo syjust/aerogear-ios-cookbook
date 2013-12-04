@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		48B5C589184F27E700FF7108 /* AGDropboxAuthenticationModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 48B5C588184F27E700FF7108 /* AGDropboxAuthenticationModule.m */; };
 		48BB32321846520E007530FA /* jboss2.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 48BB32311846520E007530FA /* jboss2.jpg */; };
 		48E865D318400931001FAE73 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48E865D218400931001FAE73 /* Foundation.framework */; };
 		48E865D518400931001FAE73 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48E865D418400931001FAE73 /* CoreGraphics.framework */; };
@@ -37,6 +38,8 @@
 
 /* Begin PBXFileReference section */
 		4312327CC3F4417F9B710B14 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
+		48B5C587184F27E700FF7108 /* AGDropboxAuthenticationModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AGDropboxAuthenticationModule.h; sourceTree = "<group>"; };
+		48B5C588184F27E700FF7108 /* AGDropboxAuthenticationModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AGDropboxAuthenticationModule.m; sourceTree = "<group>"; };
 		48BB32311846520E007530FA /* jboss2.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = jboss2.jpg; sourceTree = "<group>"; };
 		48E865CF18400931001FAE73 /* Shoot.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Shoot.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		48E865D218400931001FAE73 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -143,6 +146,8 @@
 				48E865E418400931001FAE73 /* Main.storyboard */,
 				48E865E718400931001FAE73 /* AGShootViewController.h */,
 				48E865E818400931001FAE73 /* AGShootViewController.m */,
+				48B5C587184F27E700FF7108 /* AGDropboxAuthenticationModule.h */,
+				48B5C588184F27E700FF7108 /* AGDropboxAuthenticationModule.m */,
 				48E865EA18400931001FAE73 /* Images.xcassets */,
 				48E865D918400931001FAE73 /* Supporting Files */,
 			);
@@ -314,6 +319,7 @@
 			files = (
 				48E865E318400931001FAE73 /* AGAppDelegate.m in Sources */,
 				48E865E918400931001FAE73 /* AGShootViewController.m in Sources */,
+				48B5C589184F27E700FF7108 /* AGDropboxAuthenticationModule.m in Sources */,
 				48E865DF18400931001FAE73 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -20,10 +20,11 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     
 	// Set these variables before launching the app
-    #warning Set appKey from dropbox
+#warning Set appKey from dropbox
     NSString* appKey = @"APP_KEY";
-    #warning set appSecret from dropbox
+#warning set appSecret from dropbox
     NSString* appSecret = @"APP_SECRET";
+
 	NSString *root = kDBRootDropbox;
 	
 	NSString* errorMsg = nil;
@@ -119,9 +120,6 @@
 }
 
 
-
-
-
 #pragma mark -
 #pragma mark DBSessionDelegate methods
 
@@ -138,10 +136,8 @@
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)index {
 	if (index != alertView.cancelButtonIndex) {
-		//[[DBSession sharedSession] linkUserId:relinkUserId fromController:rootViewController];
-	}
 
-	//relinkUserId = nil;
+	}
 }
 
 
