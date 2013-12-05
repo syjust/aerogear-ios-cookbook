@@ -7,7 +7,7 @@
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>db-APP_KEY</string>
+				<string>shootnshare</string>
 			</array>
 		</dict>
 	</array>

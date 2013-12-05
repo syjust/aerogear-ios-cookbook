@@ -1,6 +1,8 @@
 Shoot'nShare
 ==============
-You want to shoot cool photos and share them with friends using Dropbox.
+You want to shoot cool photos and share them with friends using Flickr.
+With ShootnShare you can take picture, browse your camera roll, pick a picture to share and share it!
+Picture get uploaded in http://www.flickr.com/photos/, select your pictures set.
 
 ## Install
 All our project require [CocoaPods](http://cocoapods.org/) for dependency management;
@@ -12,43 +14,36 @@ All our project require [CocoaPods](http://cocoapods.org/) for dependency manage
 After that you just need to open the ```Shoot.xcworkspace``` file in XCode and you're all set.
 
 ## Dropbox setup
+
+First of all, if you don't already have one, create a [Flickr account](http://www.flickr.com/services/).
+Then sign up with your credentials and create an app.
+
 ### Create app
-To get started with your Dropbox App, open the [Dropbox App Console](https://www.dropbox.com/developers/apps). Sign in if you have a Dropbox account, or create a free Dropbox account. Choose the **Create App** option. You’ll be presented with a series of questions – provide the following responses:
+To get started with your Flick, open the [Explore -> App Garden](https://www.dropbox.com/developers/apps) menu. Choose the [Create an App](http://www.flickr.com/services/apps/create/) option and request an API.
 
-* Dropbox API app
-* Files and Datastore
-* All File Types
+Finally, choose a name for your app, whatever you want, it just has to be unique and enter a description. Once you've created you app, you will have a App key and App secret.
 
-Finally, choose a name for your app, whatever you want, it just has to be unique. Once you've created you app, you will have a App key and App secret.
+Keep them to configure your app
 
 ### Authorize Shoot'nShare app
 
-In AGAppDelegate, replace APP_KEY/APP_SECRET by you provide app key/app secret.
+In AGAppDelegate, replace FLICKR_API_KEY/FLICKR_API_SHARED_SECRET by you provide app key/app secret.
 
-    #warning Set appKey from dropbox
-    NSString* appKey = @"APP_KEY";
-    #warning set appSecret from dropbox
-    NSString* appSecret = @"APP_SECRET";
-
-In Shoot-Info.plist
-
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>db-APP_KEY</string>
-			</array>
-		</dict>
-	</array>
+	#warning ENTER YOUR FLICKR API_KEY
+	NSString* OBJECTIVE_FLICKR_SAMPLE_API_KEY = @"FLICKR_API_KEY";
+	#warning ENTER YOUR FLICKR API_SHARED_SECRET
+	NSString* OBJECTIVE_FLICKR_SAMPLE_API_SHARED_SECRET = @"FLICKR_API_SHARED_SECRET";
 
 ## UI Fow 
-When you start the application you need to link your app with dropbox. Click on 'Link to Dropbox' and enter your credentials. 
+When you start the application you need to link your app with Flickr. Click on 'Link to Flickr' and enter your credentials. 
 
-Once linked, you can shoot a photo and then upload it to dropbox. You can also browse existing photos, pick one and upload it to Dropbox.
+Once linked, you can shoot a photo and then upload it to Flickr. You can also browse existing photos, pick one and upload it to Dropbox.
 
 ## How does it work?
-### Dropbox authentication: an overview
+
+### Flickr authentication: an overview
+
+AeroGear iOS libs don't provide OAuth2 adapter (not yet, to come soon see JIRA-...), we use a fork version of [ObjectiveFlickr](https://github.com/corinnekrych/objectiveflickr) as cocoapods dependecy. 
 
 ### upload file
 

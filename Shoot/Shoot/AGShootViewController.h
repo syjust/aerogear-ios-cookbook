@@ -8,9 +8,9 @@
 
 #import <UIKit/UIKit.h>
 #import <MobileCoreServices/MobileCoreServices.h>
-#import <DropboxSDK/DropboxSDK.h>
+#import "ObjectiveFlickr.h"
 
-@interface AGShootViewController : UIViewController <UIImagePickerControllerDelegate, UINavigationControllerDelegate>
+@interface AGShootViewController : UIViewController <UIImagePickerControllerDelegate, UINavigationControllerDelegate, OFFlickrAPIRequestDelegate>
 
 @property BOOL newMedia;
 @property (strong, nonatomic) IBOutlet UIImageView *imageView;
@@ -18,8 +18,8 @@
 - (IBAction)useCameraRoll:(id)sender;
 - (IBAction)share:(id)sender;
 
-// Dropbox OAuth step
+// OAuth step
 - (IBAction)didPressLink;
 @property (nonatomic, retain) IBOutlet UIButton* linkButton;
-@property (nonatomic, retain) DBRestClient* restClient;
+@property (nonatomic, retain) OFFlickrAPIRequest *flickrRequest;
 @end

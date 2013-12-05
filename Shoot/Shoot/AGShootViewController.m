@@ -9,7 +9,10 @@
 #import "AGShootViewController.h"
 #import "AeroGear.h"
 #import "AGAuthenticationModule.h"
-#import "AGDropboxAuthenticationModule.h"
+#import "AGAppDelegate.h"
+
+NSString *kFetchRequestTokenStep = @"kFetchRequestTokenStep";
+NSString *kGetUserInfoStep = @"kGetUserInfoStep";
 
 @interface AGShootViewController ()
 
@@ -18,32 +21,56 @@
 @implementation AGShootViewController
 @synthesize imageView = _imageView;
 @synthesize linkButton = _linkButton;
-@synthesize restClient = _restClient;
-
+@synthesize flickrRequest = _flickrRequest;
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    [self updateButtons];
 }
 
 
 - (void)didPressLink {
-    if (![[DBSession sharedSession] isLinked]) {
-		[[DBSession sharedSession] linkFromController:self];
-        [self updateButtons];
-    } else {
-        [[DBSession sharedSession] unlinkAll];
-        [[[UIAlertView alloc]
-          initWithTitle:@"Account Unlinked!" message:@"Your dropbox account has been unlinked"
-          delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil]
-         show];
-        [self updateButtons];
+    // if there's already OAuthToken, we want to reauthorize
+    if ([[AGAppDelegate sharedDelegate].flickrContext.OAuthToken length]) {
+        [[AGAppDelegate sharedDelegate] setAndStoreFlickrAuthToken:nil secret:nil];
     }
+    
+    self.flickrRequest.sessionInfo = kFetchRequestTokenStep;
+    [self.flickrRequest fetchOAuthRequestTokenWithCallbackURL:[NSURL URLWithString:SRCallbackURLBaseString]];
 }
 
-- (void)updateButtons {
-    NSString* title = [[DBSession sharedSession] isLinked] ? @"Unlink Dropbox" : @"Link Dropbox";
-    [self.linkButton setTitle:title forState:UIControlStateNormal];
+
+- (OFFlickrAPIRequest *)flickrRequest
+{
+    if (!_flickrRequest) {
+        _flickrRequest = [[OFFlickrAPIRequest alloc] initWithAPIContext:[AGAppDelegate sharedDelegate].flickrContext];
+        _flickrRequest.delegate = self;
+		_flickrRequest.requestTimeoutInterval = 60.0;
+    }
+    
+    return _flickrRequest;
+}
+
+#pragma mark OFFlickrAPIRequest delegate methods
+
+- (void)flickrAPIRequest:(OFFlickrAPIRequest *)inRequest didObtainOAuthRequestToken:(NSString *)inRequestToken secret:(NSString *)inSecret
+{
+    // these two lines are important
+    [AGAppDelegate sharedDelegate].flickrContext.OAuthToken = inRequestToken;
+    [AGAppDelegate sharedDelegate].flickrContext.OAuthTokenSecret = inSecret;
+    
+    NSURL *authURL = [[AGAppDelegate sharedDelegate].flickrContext userAuthorizationURLWithRequestToken:inRequestToken requestedPermission:OFFlickrWritePermission];
+    [[UIApplication sharedApplication] openURL:authURL];
+}
+
+- (void)flickrAPIRequest:(OFFlickrAPIRequest *)inRequest didCompleteWithResponse:(NSDictionary *)inResponseDictionary
+{
+    NSLog(@"%s %@ %@", __PRETTY_FUNCTION__, inRequest.sessionInfo, inResponseDictionary);
+    
+}
+
+- (void)flickrAPIRequest:(OFFlickrAPIRequest *)inRequest didFailWithError:(NSError *)inError
+{
+    NSLog(@"%s %@ %@", __PRETTY_FUNCTION__, inRequest.sessionInfo, inError);
 }
 
 - (void)didReceiveMemoryWarning
@@ -81,51 +108,51 @@
 
 - (IBAction)share:(id)sender {
     NSLog(@"Sharing...");
+    NSDictionary* inArguments = @{@"is_public":@"0"};
     
-    NSData *imageData = [NSData dataWithData:UIImageJPEGRepresentation(self.imageView.image, 0.5)];
+    
+    OFFlickrAPIContext* context = [[AGAppDelegate sharedDelegate] flickrContext];
+    NSDictionary *signedArgs = [context signedOAuthHTTPQueryArguments:(inArguments ? inArguments : [NSDictionary dictionary]) baseURL:[NSURL URLWithString:[context uploadEndpoint]] method:LFHTTPRequestPOSTMethod];
+    
+    
+    NSData *imageData = UIImageJPEGRepresentation(self.imageView.image, 0.2);
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *documentsPath = [paths objectAtIndex:0]; //Get the docs directory
     NSString *filePath = [documentsPath stringByAppendingPathComponent:@"tempImage.jpeg"]; //Add the file name
     [imageData writeToFile:filePath atomically:YES]; //Write the file
     
+    // ObjectiveFlickr upload IS successfull
+    // Uncomment this line to test ObjectiveFlickr upload
+    //[self.flickrRequest uploadImageStream:[NSInputStream inputStreamWithData:imageData] suggestedFilename:@"Snap and Run Demo" MIMEType:@"image/jpeg" arguments:[NSDictionary dictionaryWithObjectsAndKeys:@"0", @"is_public", nil]];
     
-    // Create an dropbox authenticator wrapper object
-    AGDropboxAuthenticationModule* myMod = [[AGDropboxAuthenticationModule alloc] init];
-
-    [myMod login:nil success:^(id object) {
-        NSURL* baseURL2 = [NSURL URLWithString:@"https://api-content.dropbox.com/1/files_put/dropbox/"];
-        AGPipeline* pipeline = [AGPipeline pipelineWithBaseURL:baseURL2];
-        
-        id<AGPipe> photos = [pipeline pipe:^(id<AGPipeConfig> config) {
-            [config setName:@"photos"];
-            [config setBaseURL:baseURL2];
-            [config setAuthModule:myMod];
-        }];
-        
-        NSURL *file1 = [NSURL fileURLWithPath:filePath];
-        // construct the data to sent with the files added
-        NSMutableDictionary *files = [@{@"jboss2_pano_222.jpg":file1, @"id":[NSString stringWithFormat:@"photo_%i.jpg", arc4random() % 1000]} mutableCopy];
-        
-        // save the 'new' project:
-        [photos save:files success:^(id responseObject) {
-            // LOG the JSON response, returned from the server:
-            NSLog(@"CREATE RESPONSE\n%@", [responseObject description]);
-            
-            // get the id of the new project, from the JSON response...
-            id resourceId = [responseObject valueForKey:@"id"];
-            
-            // and update the 'object', so that it knows its ID...
-            [files setValue:[resourceId stringValue] forKey:@"id"];
-            
-        } failure:^(NSError *error) {
-            // when an error occurs... at least log it to the console..
-            NSLog(@"SAVE: An error occured! \n%@", error);
-        }];
-        
-
-    } failure:^(NSError *error) {
-        
+    // Upload with AEroGEar failing with 401
+    NSURL* baseURL2 = [NSURL URLWithString:@"http://api.flickr.com/services/"];
+    AGPipeline* pipeline = [AGPipeline pipelineWithBaseURL:baseURL2];
+    
+    id<AGPipe> photos = [pipeline pipe:^(id<AGPipeConfig> config) {
+        [config setName:@"upload"];
+        [config setBaseURL:baseURL2];
+        //[config setAuthModule:myMod];
     }];
+    
+    NSURL *file1 = [NSURL fileURLWithPath:filePath];
+    // construct the data to sent with the files added
+    NSMutableDictionary *files = [[NSMutableDictionary alloc] init];
+    [files addEntriesFromDictionary:signedArgs];
+    [files addEntriesFromDictionary:@{@"file":file1}];
+    
+    // save the 'new' project:
+    [photos save:files success:^(id responseObject) {
+        // LOG the JSON response, returned from the server:
+        NSLog(@"CREATE RESPONSE\n%@", [responseObject description]);
+        
+        
+    } failure:^(NSError *error) {
+        // when an error occurs... at least log it to the console..
+        NSLog(@"SAVE: An error occured! \n%@", error);
+    }];
+    
+
 }
 
 #pragma mark -
