@@ -2,4 +2,4 @@ xcodeproj 'Shoot.xcodeproj'
 platform :ios, '5.0'
          
 pod 'AeroGear', '1.3.0'
-pod 'ObjectiveFlickr', :git => 'https://github.com/corinnekrych/objectiveflickr.git'
+pod 'AFOAuth1Client', '0.3.3'

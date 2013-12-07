@@ -8,18 +8,11 @@
 
 
 #import <UIKit/UIKit.h>
-#import "ObjectiveFlickr.h"
+#import "AFOAuth1Client.h"
+#import "AFJSONRequestOperation.h"
 
-@interface AGAppDelegate : UIResponder <UIApplicationDelegate, OFFlickrAPIRequestDelegate> {
-    OFFlickrAPIContext *flickrContext;
-	OFFlickrAPIRequest *flickrRequest;
-	NSString *flickrUserName;
-}
-+ (AGAppDelegate *)sharedDelegate;
-- (void)setAndStoreFlickrAuthToken:(NSString *)inAuthToken secret:(NSString *)inSecret;
+@interface AGAppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
-@property (nonatomic, readonly) OFFlickrAPIContext *flickrContext;
-@property (nonatomic, retain) NSString *flickrUserName;
+@property (strong, nonatomic) AFOAuth1Client *flickrClient;
 @end
-extern NSString *SRCallbackURLBaseString;
