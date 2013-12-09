@@ -16,3 +16,5 @@
 @property (strong, nonatomic) UIWindow *window;
 @property (strong, nonatomic) AFOAuth1Client *flickrClient;
 @end
+extern NSString* FLICKR_SAMPLE_API_KEY;
+extern NSString* FLICKR_SAMPLE_API_SHARED_SECRET;

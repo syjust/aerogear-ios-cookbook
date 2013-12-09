@@ -20,6 +20,7 @@ NSString *kGetUserInfoStep = @"kGetUserInfoStep";
 
 @implementation AGShootViewController
 @synthesize imageView = _imageView;
+@synthesize flickrClient = _flickrClient;
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -57,6 +58,25 @@ NSString *kGetUserInfoStep = @"kGetUserInfoStep";
         _newMedia = NO;
     }
 }
+static inline NSString * AFNounce() {
+    CFUUIDRef uuid = CFUUIDCreate(NULL);
+    CFStringRef string = CFUUIDCreateString(NULL, uuid);
+    CFRelease(uuid);
+    
+    return (NSString *)CFBridgingRelease(string);
+}
+- (NSDictionary *)generateOAuthParametersWithToken:(AFOAuth1Token*)token {
+    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    parameters[@"oauth_version"] = @"1.0";
+    parameters[@"oauth_signature_method"] = @"HMAC-SHA1";
+    parameters[@"oauth_consumer_key"] = FLICKR_SAMPLE_API_KEY;
+    parameters[@"oauth_timestamp"] = [@(floor([[NSDate date] timeIntervalSince1970])) stringValue];
+    parameters[@"oauth_nonce"] = AFNounce();
+    parameters[@"is_public"] = @"0";
+    parameters[@"oauth_token"] = token.key;
+    
+    return parameters;
+}
 
 - (IBAction)share:(id)sender {
     NSLog(@"Sharing...");
@@ -66,38 +86,48 @@ NSString *kGetUserInfoStep = @"kGetUserInfoStep";
     NSString *documentsPath = [paths objectAtIndex:0]; //Get the docs directory
     NSString *filePath = [documentsPath stringByAppendingPathComponent:@"tempImage.jpeg"]; //Add the file name
     [imageData writeToFile:filePath atomically:YES]; //Write the file
+    NSURL *file1 = [NSURL fileURLWithPath:filePath];
+
+    self.flickrClient = [[AFOAuth1Client alloc] initWithBaseURL:[NSURL URLWithString:@"http://www.flickr.com/"] key:FLICKR_SAMPLE_API_KEY secret:FLICKR_SAMPLE_API_SHARED_SECRET];
     
-    // ObjectiveFlickr upload IS successfull
-    // Uncomment this line to test ObjectiveFlickr upload
-    //[self.flickrRequest uploadImageStream:[NSInputStream inputStreamWithData:imageData] suggestedFilename:@"Snap and Run Demo" MIMEType:@"image/jpeg" arguments:[NSDictionary dictionaryWithObjectsAndKeys:@"0", @"is_public", nil]];
+    [self.flickrClient authorizeUsingOAuthWithRequestTokenPath:@"/services/oauth/request_token" userAuthorizationPath:@"/services/oauth/authorize" callbackURL:[NSURL URLWithString:@"shootnshare://auth"] accessTokenPath:@"/services/oauth/access_token" accessMethod:@"POST" scope:nil success:^(AFOAuth1Token *accessToken, id responseObject) {
+        //[self.flickrClient registerHTTPOperationClass:[AFJSONRequestOperation class]];
+        NSLog(@"Success: %@ Logged ", accessToken.userInfo[@"fullname"]);
+        [AFOAuth1Token storeCredential:accessToken withIdentifier:@"shootnshare"];
+        
+        NSDictionary *parameters = [self generateOAuthParametersWithToken:accessToken];
+        
+        // construct the data to sent with the files added
+        NSMutableDictionary *files = [[NSMutableDictionary alloc] init];
+        [files addEntriesFromDictionary:parameters];
+        [files addEntriesFromDictionary:@{@"photo":file1}];
+        
+        // Upload with AEroGEar failing with 401
+        AGPipeline* pipeline = [AGPipeline pipelineWithBaseURL:[NSURL URLWithString:@"http://api.flickr.com"]];
+        
+        id<AGPipe> photos = [pipeline pipe:^(id<AGPipeConfig> config) {
+            [config setName:@"upload"];
+            [config setBaseURL:[NSURL URLWithString:@"http://api.flickr.com"]];
+            [config setEndpoint:@"/services/upload/"];
+            //[config setAuthModule:myMod];
+        }];
+        
+        
+        // save the 'new' project:
+        [photos save:files success:^(id responseObject) {
+            // LOG the JSON response, returned from the server:
+            NSLog(@"CREATE RESPONSE\n%@", [responseObject description]);
+            
+        } failure:^(NSError *error) {
+            // when an error occurs... at least log it to the console..
+            NSLog(@"SAVE: An error occured! \n%@", error);
+        }];
+
+
+    } failure:^(NSError *error) {
+        NSLog(@"Error: %@", error);
+    }];
     
-    // Upload with AEroGEar failing with 401
-//    NSURL* baseURL2 = [NSURL URLWithString:@"http://api.flickr.com/services/"];
-//    AGPipeline* pipeline = [AGPipeline pipelineWithBaseURL:baseURL2];
-//    
-//    id<AGPipe> photos = [pipeline pipe:^(id<AGPipeConfig> config) {
-//        [config setName:@"upload/"];
-//        [config setBaseURL:baseURL2];
-//        //[config setAuthModule:myMod];
-//    }];
-//    
-//    NSURL *file1 = [NSURL fileURLWithPath:filePath];
-//    // construct the data to sent with the files added
-//    NSMutableDictionary *files = [[NSMutableDictionary alloc] init];
-//    [files addEntriesFromDictionary:signedArgs];
-//    [files addEntriesFromDictionary:@{@"photo":file1}];
-//    
-//    // save the 'new' project:
-//    [photos save:files success:^(id responseObject) {
-//        // LOG the JSON response, returned from the server:
-//        NSLog(@"CREATE RESPONSE\n%@", [responseObject description]);
-//        
-//        
-//    } failure:^(NSError *error) {
-//        // when an error occurs... at least log it to the console..
-//        NSLog(@"SAVE: An error occured! \n%@", error);
-//    }];
-//    
 
 }
 

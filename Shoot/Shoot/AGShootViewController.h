@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import <MobileCoreServices/MobileCoreServices.h>
-
+#import "AFOAuth1Client.h"
 @interface AGShootViewController : UIViewController <UIImagePickerControllerDelegate, UINavigationControllerDelegate>
 
 @property BOOL newMedia;
@@ -16,5 +16,5 @@
 - (IBAction)useCamera:(id)sender;
 - (IBAction)useCameraRoll:(id)sender;
 - (IBAction)share:(id)sender;
-
+@property (strong, nonatomic) AFOAuth1Client *flickrClient;
 @end
