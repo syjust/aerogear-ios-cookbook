@@ -466,6 +466,7 @@
 		};
 		48E8660518400931001FAE73 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4312327CC3F4417F9B710B14 /* Pods.xcconfig */;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Shoot.app/Shoot";
@@ -489,6 +490,7 @@
 		};
 		48E8660618400931001FAE73 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4312327CC3F4417F9B710B14 /* Pods.xcconfig */;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Shoot.app/Shoot";
