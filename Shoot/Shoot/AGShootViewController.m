@@ -91,12 +91,12 @@ static inline NSString * AFNounce() {
 - (IBAction)share:(id)sender {
     NSLog(@"Sharing...");
    
-//    NSData *imageData = UIImageJPEGRepresentation(self.imageView.image, 0.2);
-//    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-//    NSString *documentsPath = [paths objectAtIndex:0]; //Get the docs directory
-//    NSString *filePath = [documentsPath stringByAppendingPathComponent:@"tempImage.jpeg"]; //Add the file name
-//    [imageData writeToFile:filePath atomically:YES]; //Write the file
-//    NSURL *file1 = [NSURL fileURLWithPath:filePath];
+    NSData *imageData = UIImageJPEGRepresentation(self.imageView.image, 0.2);
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsPath = [paths objectAtIndex:0]; //Get the docs directory
+    NSString *filePath = [documentsPath stringByAppendingPathComponent:@"tempImage.jpeg"]; //Add the file name
+    [imageData writeToFile:filePath atomically:YES]; //Write the file
+    NSURL *file1 = [NSURL fileURLWithPath:filePath];
     
     AGAuthenticator* authenticator = [AGAuthenticator authenticator];
     id<AGOAuth1Config> config = [[AGOAuth1Configuration alloc] init];
@@ -115,6 +115,34 @@ static inline NSString * AFNounce() {
     id<AGOAuth1AuthenticationModule> myOAuth1Module = (id<AGOAuth1AuthenticationModule>)myOAuthModule;
     [myOAuth1Module authorize:nil success:^(id token, id object) {
         NSLog(@"Success: Logged ");
+        // construct the data to sent with the files added
+        NSDictionary *parameters = [self generateOAuthParametersWithToken:(AFOAuth1Token *)token];
+        NSMutableDictionary *files = [[NSMutableDictionary alloc] init];
+        [files addEntriesFromDictionary:parameters];
+        [files addEntriesFromDictionary:@{@"photo":file1}];
+        
+        
+        
+        AGPipeline* pipeline = [AGPipeline pipelineWithBaseURL:[NSURL URLWithString:@"http://api.flickr.com"]];
+        id<AGPipe> photos = [pipeline pipe:^(id<AGPipeConfig> config) {
+            
+            [config setName:@"upload"];
+            [config setBaseURL:[NSURL URLWithString:@"http://api.flickr.com"]];
+            [config setEndpoint:@"/services/upload/"];
+            [config setAuthModule:myOAuth1Module];
+
+        }];
+        
+        // save the 'new' project:
+        [photos save:files success:^(id responseObject) {
+             // LOG the JSON response, returned from the server:
+             NSLog(@"CREATE RESPONSE\n%@", [responseObject description]);
+         } failure:^(NSError *error) {
+             // when an error occurs... at least log it to the console..
+             NSLog(@"SAVE: An error occured! \n%@", error);
+         }];
+        
+        
     } failure:^(NSError *error) {
         NSLog(@"Failure to OAuth1 authorize");
     }];
