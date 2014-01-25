@@ -32,7 +32,9 @@
 @end
 
 @implementation AGShootViewController {
-    id<AGAuthzModule> _restAuthzModule;
+    id<AGAuthzModule> _restAuthzGoogleModule;
+    id<AGAuthzModule> _restAuthzFacebookeModule;
+
     
     NSString *_token;
 }
@@ -101,13 +103,13 @@
     // set up upload pipe
     id<AGPipe> uploadPipe = [gPipeline pipe:^(id<AGPipeConfig> config) {
         [config setName:@"upload/drive/v2/files"];
-        [config setAuthzModule:_restAuthzModule];
+        [config setAuthzModule:_restAuthzGoogleModule];
     }];
     
     // set up metadata pipe
     id<AGPipe> metaPipe = [gPipeline pipe:^(id<AGPipeConfig> config) {
         [config setName:@"drive/v2/files"];
-        [config setAuthzModule:_restAuthzModule];
+        [config setAuthzModule:_restAuthzGoogleModule];
     }];
     
     // Get currently displayed image
@@ -207,8 +209,8 @@
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonInden {
     // start up the authorization process
     AGAuthorizer* authorizer = [AGAuthorizer authorizer];
-    
-    _restAuthzModule = [authorizer authz:^(id<AGAuthzConfig> config) {
+    /*
+    _restAuthzGoogleModule = [authorizer authz:^(id<AGAuthzConfig> config) {
         config.name = @"restAuthMod";
         config.baseURL = [[NSURL alloc] initWithString:@"https://accounts.google.com"];
         config.authzEndpoint = @"/o/oauth2/auth";
@@ -218,11 +220,32 @@
         config.scopes = @[@"https://www.googleapis.com/auth/drive"];
     }];
     
-    [_restAuthzModule requestAccessSuccess:^(id response) {
+    [_restAuthzGoogleModule requestAccessSuccess:^(id response) {
         _token = response;
         
     } failure:^(NSError *error) {
     }];
+    */
+    _restAuthzFacebookeModule = [authorizer authz:^(id<AGAuthzConfig> config) {
+        config.name = @"restAuthMod";
+        config.baseURL = [[NSURL alloc] initWithString:@"https://www.facebook.com"];
+        config.authzEndpoint = @"/dialog/oauth";
+        config.accessTokenEndpoint = @"https://graph.facebook.com/oauth/access_token";
+        config.clientId = @"538820956226145";
+        config.clientSecret = @"53266e90f154805d6afde2c3950ae9f5";
+        //TODO check correct
+        config.redirectURL = @"https://www.facebook.com/connect/login_success.html";
+        config.scopes = @[@"publish_actions", @"publish_stream"];
+    }];
+    
+    [_restAuthzFacebookeModule requestAccessSuccess:^(id response) {
+        _token = response;
+        
+    } failure:^(NSError *error) {
+    }];
+
+    
+    
 }
 
 @end
